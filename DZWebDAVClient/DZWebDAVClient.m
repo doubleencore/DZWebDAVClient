@@ -148,7 +148,7 @@ NSString const *DZWebDAVModificationDateKey	= @"lp1:getlastmodified";
             if ([unformatted objectForKey: DZWebDAVCTagKey]) {
                 [object setObject: [unformatted objectForKey: DZWebDAVCTagKey] forKey: DZWebDAVCTagKey];
             }
-            if ([unformatted objectForKey: DZWebDAVCTagKey] || [unformatted objectForKey: @"contenttype"]) {
+            if ([unformatted objectForKey: DZWebDAVContentTypeKey] || [unformatted objectForKey: @"contenttype"]) {
                 [object setObject: [unformatted objectForKey: DZWebDAVContentTypeKey] ?: [unformatted objectForKey: @"contenttype"] forKey: DZWebDAVContentTypeKey];
             }
 			
