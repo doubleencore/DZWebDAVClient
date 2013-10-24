@@ -126,6 +126,11 @@ NSString const *DZWebDAVModificationDateKey	= @"lp1:getlastmodified";
 			// reformat the response dictionaries into usable values
 			NSMutableDictionary *object = [NSMutableDictionary dictionaryWithCapacity: 5];
 
+            if ([unformatted isKindOfClass:[NSString class]]) {
+                [object setObject:unformatted forKey:DZWebDAVContentTypeKey];
+                [dict setObject: object forKey: key];
+                return;
+            }
             NSString *origCreationDate = [unformatted objectForKey: DZWebDAVCreationDateKey];
             if (origCreationDate) {
                 NSDate *creationDate = [NSDate dateFromRFC1123String: origCreationDate] ?: [NSDate dateFromISO8601String: origCreationDate] ?: nil;
