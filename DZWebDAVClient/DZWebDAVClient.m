@@ -10,10 +10,10 @@
 #import "DZWebDAVLock.h"
 
 NSString const *DZWebDAVContentTypeKey		= @"getcontenttype";
-NSString const *DZWebDAVETagKey				= @"getetag";
+NSString const *DZWebDAVETagKey				= @"lp1:getetag";
 NSString const *DZWebDAVCTagKey				= @"getctag";
-NSString const *DZWebDAVCreationDateKey		= @"creationdate";
-NSString const *DZWebDAVModificationDateKey	= @"modificationdate";
+NSString const *DZWebDAVCreationDateKey		= @"lp1:creationdate";
+NSString const *DZWebDAVModificationDateKey	= @"lp1:getlastmodified";
 
 @interface DZWebDAVClient()
 - (void)mr_listPath:(NSString *)path depth:(NSUInteger)depth success:(void(^)(AFHTTPRequestOperation *, id))success failure:(void(^)(AFHTTPRequestOperation *, NSError *))failure;
@@ -98,7 +98,7 @@ NSString const *DZWebDAVModificationDateKey	= @"modificationdate";
     [request setHTTPBody:[@"<?xml version=\"1.0\" encoding=\"utf-8\" ?><D:propfind xmlns:D=\"DAV:\"><D:allprop/></D:propfind>" dataUsingEncoding:NSUTF8StringEncoding]];
     [request setValue:@"application/xml" forHTTPHeaderField:@"Content-Type"];
 	AFHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
-		if (responseObject && ![responseObject isKindOfClass:[NSDictionary class]]) {
+		if ((responseObject && ![responseObject isKindOfClass:[NSDictionary class]]) || nil == responseObject) {
             		if (failure)
                 		failure(operation, [NSError errorWithDomain:AFNetworkingErrorDomain code:NSURLErrorCannotParseResponse userInfo:nil]);
             		return;
@@ -125,18 +125,27 @@ NSString const *DZWebDAVModificationDateKey	= @"modificationdate";
 			
 			// reformat the response dictionaries into usable values
 			NSMutableDictionary *object = [NSMutableDictionary dictionaryWithCapacity: 5];
-			
-			NSString *origCreationDate = [unformatted objectForKey: DZWebDAVCreationDateKey];
-            NSDate *creationDate = [NSDate dateFromRFC1123String: origCreationDate] ?: [NSDate dateFromISO8601String: origCreationDate] ?: nil;
+
+            NSString *origCreationDate = [unformatted objectForKey: DZWebDAVCreationDateKey];
+            if (origCreationDate) {
+                NSDate *creationDate = [NSDate dateFromRFC1123String: origCreationDate] ?: [NSDate dateFromISO8601String: origCreationDate] ?: nil;
+                [object setObject: creationDate forKey: DZWebDAVCreationDateKey];
+            }
 			
 			NSString *origModificationDate = [unformatted objectForKey: DZWebDAVModificationDateKey] ?: [unformatted objectForKey: @"getlastmodified"];
-			NSDate *modificationDate = [NSDate dateFromRFC1123String: origModificationDate] ?: [NSDate dateFromISO8601String: origModificationDate] ?: nil;
-			
-			[object setObject: [unformatted objectForKey: DZWebDAVETagKey] forKey: DZWebDAVETagKey];
-			[object setObject: [unformatted objectForKey: DZWebDAVCTagKey] forKey: DZWebDAVCTagKey];
-			[object setObject: [unformatted objectForKey: DZWebDAVContentTypeKey] ?: [unformatted objectForKey: @"contenttype"] forKey: DZWebDAVContentTypeKey];
-            [object setObject: creationDate forKey: DZWebDAVCreationDateKey];
-			[object setObject: modificationDate forKey: DZWebDAVModificationDateKey];
+            if (origModificationDate) {
+                NSDate *modificationDate = [NSDate dateFromRFC1123String: origModificationDate] ?: [NSDate dateFromISO8601String: origModificationDate] ?: nil;
+                [object setObject: modificationDate forKey: DZWebDAVModificationDateKey];
+            }
+            if ([unformatted objectForKey: DZWebDAVETagKey]) {
+                [object setObject: [unformatted objectForKey: DZWebDAVETagKey] forKey: DZWebDAVETagKey];
+            }
+            if ([unformatted objectForKey: DZWebDAVCTagKey]) {
+                [object setObject: [unformatted objectForKey: DZWebDAVCTagKey] forKey: DZWebDAVCTagKey];
+            }
+            if ([unformatted objectForKey: DZWebDAVCTagKey] || [unformatted objectForKey: @"contenttype"]) {
+                [object setObject: [unformatted objectForKey: DZWebDAVContentTypeKey] ?: [unformatted objectForKey: @"contenttype"] forKey: DZWebDAVContentTypeKey];
+            }
 			
 			[dict setObject: object forKey: key];
 		}];
