@@ -14,6 +14,7 @@ NSString const *DZWebDAVETagKey				= @"lp1:getetag";
 NSString const *DZWebDAVCTagKey				= @"getctag";
 NSString const *DZWebDAVCreationDateKey		= @"lp1:creationdate";
 NSString const *DZWebDAVModificationDateKey	= @"lp1:getlastmodified";
+NSString const *DZWebDAVResourceTypeKey     = @"g0:resourcetype";
 
 @interface DZWebDAVClient()
 - (void)mr_listPath:(NSString *)path depth:(NSUInteger)depth success:(void(^)(AFHTTPRequestOperation *, id))success failure:(void(^)(AFHTTPRequestOperation *, NSError *))failure;
@@ -95,9 +96,11 @@ NSString const *DZWebDAVModificationDateKey	= @"lp1:getlastmodified";
 	else
 		depthHeader = @"infinity";
     [request setValue: depthHeader forHTTPHeaderField: @"Depth"];
-    [request setHTTPBody:[@"<?xml version=\"1.0\" encoding=\"utf-8\" ?><D:propfind xmlns:D=\"DAV:\"><D:allprop/></D:propfind>" dataUsingEncoding:NSUTF8StringEncoding]];
+    [request setHTTPBody:[@"<?xml version=\"1.0\" encoding=\"utf-8\" ?><D:propfind xmlns:D=\"DAV:\"><D:prop><D:getcontenttype/></D:prop></D:propfind>" dataUsingEncoding:NSUTF8StringEncoding]];
     [request setValue:@"application/xml" forHTTPHeaderField:@"Content-Type"];
+//    NSLog(@"REQUEST: %@", [request allHTTPHeaderFields]);
 	AFHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
+//        NSLog(@"RESPONSE OBJECT: %@", responseObject);
 		if ((responseObject && ![responseObject isKindOfClass:[NSDictionary class]]) || nil == responseObject) {
             		if (failure)
                 		failure(operation, [NSError errorWithDomain:AFNetworkingErrorDomain code:NSURLErrorCannotParseResponse userInfo:nil]);
@@ -115,7 +118,7 @@ NSString const *DZWebDAVModificationDateKey	= @"lp1:getlastmodified";
 		
 		[unformattedDict enumerateKeysAndObjectsUsingBlock:^(NSString *absoluteKey, NSDictionary *unformatted, BOOL *stop) {
 			// filter out Finder thumbnail files (._filename), they get us screwed up.
-			if ([absoluteKey.lastPathComponent hasPrefix: @"._"])
+			if ([absoluteKey.lastPathComponent hasPrefix: @"."])
 				return;
 			
 			// Replace an absolute path with a relative one
@@ -147,6 +150,9 @@ NSString const *DZWebDAVModificationDateKey	= @"lp1:getlastmodified";
             }
             if ([unformatted objectForKey: DZWebDAVCTagKey]) {
                 [object setObject: [unformatted objectForKey: DZWebDAVCTagKey] forKey: DZWebDAVCTagKey];
+            }
+            if ([unformatted objectForKey: DZWebDAVResourceTypeKey]) {
+                [object setObject: [unformatted objectForKey: DZWebDAVResourceTypeKey] forKey: DZWebDAVResourceTypeKey];
             }
             if ([unformatted objectForKey: DZWebDAVContentTypeKey] || [unformatted objectForKey: @"contenttype"]) {
                 [object setObject: [unformatted objectForKey: DZWebDAVContentTypeKey] ?: [unformatted objectForKey: @"contenttype"] forKey: DZWebDAVContentTypeKey];

@@ -50,12 +50,13 @@ static dispatch_queue_t xml_request_operation_processing_queue() {
                               failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure {
 	__weak DZDictionaryRequestOperation *safeOp = self;
     self.completionBlock = ^ {
-        if ([safeOp isCancelled]) {
+        __strong DZDictionaryRequestOperation *strongSelf = safeOp;
+
+        if ([strongSelf isCancelled]) {
             return;
         }
 
         dispatch_async(xml_request_operation_processing_queue(), ^(void) {
-            DZDictionaryRequestOperation *strongSelf = safeOp;
 
             if (strongSelf.error) {
                 if (failure) {
