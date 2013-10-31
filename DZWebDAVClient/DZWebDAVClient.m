@@ -10,6 +10,7 @@
 #import "DZWebDAVLock.h"
 
 NSString const *DZWebDAVContentTypeKey		= @"getcontenttype";
+NSString const *DZWebDAVContentLengthKey	= @"lp1:getcontentlength";
 NSString const *DZWebDAVETagKey				= @"lp1:getetag";
 NSString const *DZWebDAVCTagKey				= @"getctag";
 NSString const *DZWebDAVCreationDateKey		= @"lp1:creationdate";
@@ -96,7 +97,14 @@ NSString const *DZWebDAVResourceTypeKey     = @"g0:resourcetype";
 	else
 		depthHeader = @"infinity";
     [request setValue: depthHeader forHTTPHeaderField: @"Depth"];
-    [request setHTTPBody:[@"<?xml version=\"1.0\" encoding=\"utf-8\" ?><D:propfind xmlns:D=\"DAV:\"><D:prop><D:getcontenttype/></D:prop></D:propfind>" dataUsingEncoding:NSUTF8StringEncoding]];
+    NSMutableString *body = [@"<?xml version=\"1.0\" encoding=\"utf-8\" ?><D:propfind xmlns:D=\"DAV:\">" mutableCopy];
+    if (depth == 0) {
+        [body appendString:@"<D:prop><D:getcontenttype/><D:getlastmodified/><D:creationdate/><D:getcontentlength/></D:prop></D:propfind>"];
+    }
+    else {
+        [body appendString:@"<D:prop><D:getcontenttype/></D:prop></D:propfind>"];
+    }
+    [request setHTTPBody:[body dataUsingEncoding:NSUTF8StringEncoding]];
     [request setValue:@"application/xml" forHTTPHeaderField:@"Content-Type"];
 //    NSLog(@"REQUEST: %@", [request allHTTPHeaderFields]);
 	AFHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
@@ -127,7 +135,7 @@ NSString const *DZWebDAVResourceTypeKey     = @"g0:resourcetype";
 				key = [key substringFromIndex:1];
 			
 			// reformat the response dictionaries into usable values
-			NSMutableDictionary *object = [NSMutableDictionary dictionaryWithCapacity: 5];
+			NSMutableDictionary *object = [NSMutableDictionary dictionaryWithCapacity: 6];
 
             if ([unformatted isKindOfClass:[NSString class]]) {
                 [object setObject:unformatted forKey:DZWebDAVContentTypeKey];
@@ -156,6 +164,9 @@ NSString const *DZWebDAVResourceTypeKey     = @"g0:resourcetype";
             }
             if ([unformatted objectForKey: DZWebDAVContentTypeKey] || [unformatted objectForKey: @"contenttype"]) {
                 [object setObject: [unformatted objectForKey: DZWebDAVContentTypeKey] ?: [unformatted objectForKey: @"contenttype"] forKey: DZWebDAVContentTypeKey];
+            }
+            if ([unformatted objectForKey: DZWebDAVContentLengthKey]) {
+                [object setObject: [unformatted objectForKey: DZWebDAVContentLengthKey] forKey: DZWebDAVContentLengthKey];
             }
 			
 			[dict setObject: object forKey: key];

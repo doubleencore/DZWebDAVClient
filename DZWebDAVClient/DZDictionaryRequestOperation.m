@@ -25,7 +25,10 @@ static dispatch_queue_t xml_request_operation_processing_queue() {
 @synthesize responseDictionary = _responseDictionary, parseError = _parseError;
 
 + (BOOL)canProcessRequest:(NSURLRequest *)request {
-    return YES;
+    if ([request.HTTPMethod isEqualToString:@"PROPFIND"]) {
+        return YES;
+    }
+    return NO;
 }
 
 - (NSDictionary *)responseDictionary {
