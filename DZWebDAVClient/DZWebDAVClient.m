@@ -115,13 +115,35 @@ NSString const *DZWebDAVResourceTypeKey     = @"g0:resourcetype";
             		return;
 	        }
         
-		id checkItems = [responseObject valueForKeyPath:@"multistatus.response.propstat.prop"];
         id checkHrefs = [responseObject valueForKeyPath:@"multistatus.response.href"];
-		
-		NSArray *objects = [checkItems isKindOfClass:[NSArray class]] ? checkItems : @[ checkItems ],
-		*keys = [checkHrefs isKindOfClass:[NSArray class]] ? checkHrefs : @[ checkHrefs ];
-		
-		NSDictionary *unformattedDict = [NSDictionary dictionaryWithObjects: objects forKeys: keys];
+
+        NSMutableDictionary *unformattedDict = [NSMutableDictionary dictionaryWithCapacity:[checkHrefs isKindOfClass:[NSArray class]]?[checkHrefs count]:1];
+        id response = [responseObject valueForKeyPath:@"multistatus.response"];
+        NSArray *responseArray = [response isKindOfClass:[NSArray class]] ? response : @[response];
+        for (id responseItem in responseArray) {
+            if ([responseItem isKindOfClass:[NSDictionary class]]) {
+                
+                id propstat = [responseItem valueForKey:@"propstat"];
+                if ([propstat isKindOfClass:[NSArray class]]) {
+                    
+                    //check status on properties
+                    NSArray *propstats = [propstat isKindOfClass:[NSArray class]] ? propstat : @[propstat];
+                    for(NSDictionary *propDict in propstats) {
+                        
+                        //Ignore not found properties
+                        if ([[propDict valueForKey:@"status"] rangeOfString:@"404"].location == NSNotFound) {
+                            [unformattedDict setObject:[propDict valueForKey:@"prop"] forKey:[responseItem valueForKey:@"href"]];
+                            break;
+                        }
+                    }
+                }
+                else if([propstat isKindOfClass:[NSDictionary class]]){
+                    NSDictionary *propDict = propstat;
+                    [unformattedDict setObject:[propDict valueForKey:@"prop"] forKey:[responseItem valueForKey:@"href"]];
+                }
+            }
+        }
+
 		NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity: unformattedDict.count];
 		
 		[unformattedDict enumerateKeysAndObjectsUsingBlock:^(NSString *absoluteKey, NSDictionary *unformatted, BOOL *stop) {
