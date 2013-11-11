@@ -9,6 +9,9 @@
 @implementation NSDate (ISO8601)
 
 + (NSDate *)dateFromISO8601String:(NSString *)value {
+    if (![value isKindOfClass:[NSString class]]) {
+        return nil;
+    }
 	if (!value.length)
 		return nil;
 	

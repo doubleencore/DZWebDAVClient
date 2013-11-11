@@ -44,6 +44,9 @@ static NSDateFormatter *ASCTimeFormatter(void) {
 @implementation NSDate (RFC1123)
 
 + (NSDate *)dateFromRFC1123String:(NSString *)value {
+    if (![value isKindOfClass:[NSString class]]) {
+        return nil;
+    }
     if (!value.length)
         return nil;
 	

@@ -164,16 +164,26 @@ NSString const *DZWebDAVResourceTypeKey     = @"g0:resourcetype";
                 [dict setObject: object forKey: key];
                 return;
             }
-            NSString *origCreationDate = [unformatted objectForKey: DZWebDAVCreationDateKey];
+            NSString *origCreationDate = [unformatted objectForKey: DZWebDAVCreationDateKey] ?: [unformatted objectForKey: @"creationdate"];;
             if (origCreationDate) {
+                if ([origCreationDate isKindOfClass:[NSDictionary class]]) {
+                    origCreationDate = [(NSDictionary *)origCreationDate objectForKey:@"text"];
+                }
                 NSDate *creationDate = [NSDate dateFromRFC1123String: origCreationDate] ?: [NSDate dateFromISO8601String: origCreationDate] ?: nil;
-                [object setObject: creationDate forKey: DZWebDAVCreationDateKey];
+                if (creationDate) {
+                    [object setObject: creationDate forKey: DZWebDAVCreationDateKey];
+                }
             }
 			
 			NSString *origModificationDate = [unformatted objectForKey: DZWebDAVModificationDateKey] ?: [unformatted objectForKey: @"getlastmodified"];
             if (origModificationDate) {
+                if ([origModificationDate isKindOfClass:[NSDictionary class]]) {
+                    origModificationDate = [(NSDictionary *)origModificationDate objectForKey:@"text"];
+                }
                 NSDate *modificationDate = [NSDate dateFromRFC1123String: origModificationDate] ?: [NSDate dateFromISO8601String: origModificationDate] ?: nil;
-                [object setObject: modificationDate forKey: DZWebDAVModificationDateKey];
+                if (modificationDate) {
+                    [object setObject: modificationDate forKey: DZWebDAVModificationDateKey];
+                }
             }
             if ([unformatted objectForKey: DZWebDAVETagKey]) {
                 [object setObject: [unformatted objectForKey: DZWebDAVETagKey] forKey: DZWebDAVETagKey];
@@ -187,8 +197,9 @@ NSString const *DZWebDAVResourceTypeKey     = @"g0:resourcetype";
             if ([unformatted objectForKey: DZWebDAVContentTypeKey] || [unformatted objectForKey: @"contenttype"]) {
                 [object setObject: [unformatted objectForKey: DZWebDAVContentTypeKey] ?: [unformatted objectForKey: @"contenttype"] forKey: DZWebDAVContentTypeKey];
             }
-            if ([unformatted objectForKey: DZWebDAVContentLengthKey]) {
-                [object setObject: [unformatted objectForKey: DZWebDAVContentLengthKey] forKey: DZWebDAVContentLengthKey];
+            NSNumber *contentLength = [unformatted objectForKey: DZWebDAVContentLengthKey] ?: [unformatted objectForKey: @"getcontentlength"];
+            if (contentLength) {
+                [object setObject:contentLength forKey: DZWebDAVContentLengthKey];
             }
 			
 			[dict setObject: object forKey: key];
