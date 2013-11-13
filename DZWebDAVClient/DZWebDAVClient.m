@@ -102,7 +102,7 @@ NSString const *DZWebDAVResourceTypeKey     = @"g0:resourcetype";
         [body appendString:@"<D:prop><D:getcontenttype/><D:getlastmodified/><D:creationdate/><D:getcontentlength/></D:prop></D:propfind>"];
     }
     else {
-        [body appendString:@"<D:prop><D:getcontenttype/></D:prop></D:propfind>"];
+        [body appendString:@"<D:prop><D:getcontenttype/><D:getlastmodified/><D:creationdate/><D:getcontentlength/></D:prop></D:propfind>"];
     }
     [request setHTTPBody:[body dataUsingEncoding:NSUTF8StringEncoding]];
     [request setValue:@"application/xml" forHTTPHeaderField:@"Content-Type"];

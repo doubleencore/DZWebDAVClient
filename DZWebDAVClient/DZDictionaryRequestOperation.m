@@ -71,13 +71,13 @@ static dispatch_queue_t xml_request_operation_processing_queue() {
                 if (success) {
                     NSDictionary *XML = safeOp.responseDictionary;
 
-                    dispatch_async(strongSelf.successCallbackQueue ? strongSelf.successCallbackQueue : dispatch_get_main_queue(), ^{
+//                    dispatch_async(strongSelf.successCallbackQueue ? strongSelf.successCallbackQueue : dispatch_get_main_queue(), ^{
                         if (safeOp.parseError && failure) {
                             failure(safeOp, safeOp.parseError);
                         } else if (!safeOp.parseError && success) {
                             success(safeOp, XML);
                         }
-                    });
+//                    });
                 }
             }
         });
