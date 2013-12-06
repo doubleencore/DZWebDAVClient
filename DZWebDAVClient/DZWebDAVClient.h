@@ -266,4 +266,9 @@ extern NSString *DZWebDAVModificationDateKey;
        success:(void(^)(void))success
        failure:(void(^)(AFHTTPRequestOperation *operation, NSError *error))failure;
 
+/**
+ Cancels the current move, copy, or delete operation
+ */
+- (void)cancelCurrentMoveCopyDeleteOperation;
+
 @end

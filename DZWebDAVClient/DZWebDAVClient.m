@@ -21,6 +21,8 @@ NSString const *DZWebDAVResourceTypeKey     = @"g0:resourcetype";
 - (void)mr_listPath:(NSString *)path depth:(NSUInteger)depth success:(void(^)(AFHTTPRequestOperation *, id))success failure:(void(^)(AFHTTPRequestOperation *, NSError *))failure;
 
 @property (nonatomic, strong) NSFileManager *fileManager;
+@property (nonatomic, strong) AFHTTPRequestOperation *currentMoveCopyDeleteOperation;
+
 @end
 
 @implementation DZWebDAVClient
@@ -56,6 +58,7 @@ NSString const *DZWebDAVResourceTypeKey     = @"g0:resourcetype";
 	[request setValue:@"T" forHTTPHeaderField:@"Overwrite"];
 	AFHTTPRequestOperation *operation = [self mr_operationWithRequest:request success:success failure:failure];
     [self enqueueHTTPRequestOperation:operation];
+    self.currentMoveCopyDeleteOperation = operation;
 }
 
 - (void)movePath:(NSString *)source toPath:(NSString *)destination success:(void(^)(void))success failure:(void(^)(AFHTTPRequestOperation *, NSError *))failure {
@@ -65,12 +68,14 @@ NSString const *DZWebDAVResourceTypeKey     = @"g0:resourcetype";
 	[request setValue:@"T" forHTTPHeaderField:@"Overwrite"];
 	AFHTTPRequestOperation *operation = [self mr_operationWithRequest:request success:success failure:failure];
     [self enqueueHTTPRequestOperation:operation];
+    self.currentMoveCopyDeleteOperation = operation;
 }
 
 - (void)deletePath:(NSString *)path success:(void(^)(void))success failure:(void(^)(AFHTTPRequestOperation *, NSError *))failure {
     NSMutableURLRequest *request = [self requestWithMethod:@"DELETE" path:path parameters:nil];
 	AFHTTPRequestOperation *operation = [self mr_operationWithRequest:request success:success failure:failure];
     [self enqueueHTTPRequestOperation:operation];
+    self.currentMoveCopyDeleteOperation = operation;
 }
 
 - (void)getPath:(NSString *)remoteSource success:(void(^)(AFHTTPRequestOperation *, id))success failure:(void(^)(AFHTTPRequestOperation *, NSError *))failure {
@@ -233,6 +238,7 @@ NSString const *DZWebDAVResourceTypeKey     = @"g0:resourcetype";
 	AFHTTPRequestOperation *operation = [self mr_operationWithRequest:request success:success failure:failure];
 	operation.outputStream = [NSOutputStream outputStreamWithURL: localDestination append: NO];
     [self enqueueHTTPRequestOperation:operation];
+    self.currentMoveCopyDeleteOperation = operation;
 }
 
 - (void)downloadPaths:(NSArray *)remoteSources toURL:(NSURL *)localFolder progressBlock:(void(^)(NSUInteger, NSUInteger))progressBlock completionBlock:(void(^)(NSArray *))completionBlock {
@@ -258,6 +264,7 @@ NSString const *DZWebDAVResourceTypeKey     = @"g0:resourcetype";
 	NSURLRequest *request = [self requestWithMethod:@"MKCOL" path:path parameters:nil];	
 	AFHTTPRequestOperation *operation = [self mr_operationWithRequest:request success:success failure:failure];
     [self enqueueHTTPRequestOperation:operation];
+    self.currentMoveCopyDeleteOperation = operation;
 }
 
 - (void)put:(NSData *)data path:(NSString *)remoteDestination success:(void(^)(void))success failure:(void(^)(AFHTTPRequestOperation *, NSError *))failure {
@@ -267,6 +274,7 @@ NSString const *DZWebDAVResourceTypeKey     = @"g0:resourcetype";
 	AFHTTPRequestOperation *operation = [self mr_operationWithRequest:request success:success failure:failure];
 	operation.inputStream = [NSInputStream inputStreamWithData:data];
     [self enqueueHTTPRequestOperation:operation];
+    self.currentMoveCopyDeleteOperation = operation;
 }
 
 - (void)putURL:(NSURL *)localSource path:(NSString *)remoteDestination success:(void(^)(void))success failure:(void(^)(AFHTTPRequestOperation *, NSError *))failure {
@@ -309,6 +317,11 @@ NSString const *DZWebDAVResourceTypeKey     = @"g0:resourcetype";
 	[request setValue:[NSString stringWithFormat:@"<%@>", lock.token] forHTTPHeaderField:@"Lock-Token"];
     AFHTTPRequestOperation *operation = [self mr_operationWithRequest:request success:success failure:failure];
     [self enqueueHTTPRequestOperation:operation];
+}
+
+- (void)cancelCurrentMoveCopyDeleteOperation
+{
+    [self.currentMoveCopyDeleteOperation cancel];
 }
 
 @end
