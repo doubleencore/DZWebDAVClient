@@ -41,6 +41,18 @@ static NSDateFormatter *ASCTimeFormatter(void) {
 	return formatter;
 }
 
+static NSDateFormatter *otherTimeFormatter(void) {
+	static NSDateFormatter *formatter = nil;
+	static dispatch_once_t onceToken;
+	dispatch_once(&onceToken, ^{
+		formatter = [NSDateFormatter new];
+        formatter.locale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US"];
+        formatter.timeZone = [NSTimeZone timeZoneWithAbbreviation:@"GMT"];
+        formatter.dateFormat = @"yyyy'-'MM'-'dd HH':'mm':'ss ZZZ";
+	});
+	return formatter;
+}
+
 @implementation NSDate (RFC1123)
 
 + (NSDate *)dateFromRFC1123String:(NSString *)value {
@@ -50,7 +62,7 @@ static NSDateFormatter *ASCTimeFormatter(void) {
     if (!value.length)
         return nil;
 	
-	return [RFC1123Formatter() dateFromString: value] ?: [RFC850Formatter() dateFromString: value] ?: [ASCTimeFormatter() dateFromString: value];
+	return [RFC1123Formatter() dateFromString: value] ?: [RFC850Formatter() dateFromString: value] ?: [ASCTimeFormatter() dateFromString: value] ?: [otherTimeFormatter() dateFromString:value];
 }
 
 - (NSString *)RFC1123String {
