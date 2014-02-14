@@ -277,6 +277,17 @@ NSString const *DZWebDAVResourceTypeKey     = @"g0:resourcetype";
     self.currentMoveCopyDeleteOperation = operation;
 }
 
+- (void)putLocalPath:(NSString *)localSource path:(NSString *)remoteDestination success:(void(^)(void))success failure:(void(^)(AFHTTPRequestOperation *, NSError *))failure {
+    NSMutableURLRequest *request = [self requestWithMethod:@"PUT" path:remoteDestination parameters:nil];
+	[request setValue:@"application/octet-stream" forHTTPHeaderField:@"Content-Type"];
+    NSUInteger fileSize = [[[[NSFileManager defaultManager] attributesOfItemAtPath:localSource error:nil] objectForKey:NSFileSize] unsignedIntegerValue];
+    [request setValue:[NSString stringWithFormat:@"%u", fileSize] forHTTPHeaderField:@"Content-Length"];
+	AFHTTPRequestOperation *operation = [self mr_operationWithRequest:request success:success failure:failure];
+	operation.inputStream = [NSInputStream inputStreamWithFileAtPath:localSource];
+    [self enqueueHTTPRequestOperation:operation];
+    self.currentMoveCopyDeleteOperation = operation;
+}
+
 - (void)putURL:(NSURL *)localSource path:(NSString *)remoteDestination success:(void(^)(void))success failure:(void(^)(AFHTTPRequestOperation *, NSError *))failure {
     NSMutableURLRequest *request = [self requestWithMethod:@"PUT" path:remoteDestination parameters:nil];
 	[request setValue:@"application/octet-stream" forHTTPHeaderField:@"Content-Type"];
