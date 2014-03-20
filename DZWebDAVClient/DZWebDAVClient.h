@@ -214,6 +214,11 @@ extern NSString *DZWebDAVModificationDateKey;
 	   success:(void(^)(void))success
 	   failure:(void(^)(AFHTTPRequestOperation *operation, NSError *error))failure;
 
+- (void)putLocalPath:(NSString *)localSource
+		  path:(NSString *)remoteDestination
+	   success:(void(^)(void))success
+	   failure:(void(^)(AFHTTPRequestOperation *operation, NSError *error))failure;
+
 /**
  Enqueues an operation to lock the collection or file
  at a remote path using a `LOCK` request.
