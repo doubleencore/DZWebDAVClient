@@ -47,7 +47,7 @@ NSString const *DZWebDAVResourceTypeKey     = @"g0:resourcetype";
 - (NSMutableURLRequest *)requestWithMethod:(NSString *)method path:(NSString *)path parameters:(NSDictionary *)parameters {
     NSMutableURLRequest *request = [super requestWithMethod:method path:path parameters:parameters];
     [request setCachePolicy: NSURLRequestReloadIgnoringLocalCacheData];
-    if ([method isEqualToString:@"COPY"]) {
+    if ([method isEqualToString:@"COPY"] || [method isEqualToString:@"PUT"]) {
         [request setTimeoutInterval:INT_MAX];
     }
     else {
