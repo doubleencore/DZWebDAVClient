@@ -152,9 +152,10 @@ extern NSString *DZWebDAVModificationDateKey;
  @see getPath:success:failure:
  */
 - (void)downloadPath:(NSString *)remoteSource
-			   toURL:(NSURL *)localDestination
-			 success:(void(^)(void))success
-			 failure:(void(^)(AFHTTPRequestOperation *operation, NSError *error))failure;
+               toURL:(NSURL *)localDestination
+             success:(void(^)(void))success
+             failure:(void(^)(AFHTTPRequestOperation *, NSError *))failure
+            progress:(void(^)(NSUInteger bytes, long long totalBytes, long long totalBytesExpected))progress;
 
 /**
  Enqueues a group of multiple operations to download the contents of
@@ -217,7 +218,8 @@ extern NSString *DZWebDAVModificationDateKey;
 - (void)putLocalPath:(NSString *)localSource
 		  path:(NSString *)remoteDestination
 	   success:(void(^)(void))success
-	   failure:(void(^)(AFHTTPRequestOperation *operation, NSError *error))failure;
+	   failure:(void(^)(AFHTTPRequestOperation *operation, NSError *error))failure
+      progress:(void(^)(NSUInteger bytes, long long totalBytes, long long totalBytesExpected))progress;
 
 /**
  Enqueues an operation to lock the collection or file

@@ -233,7 +233,7 @@ NSString const *DZWebDAVResourceTypeKey     = @"g0:resourcetype";
 	[self mr_listPath:path depth:2 success:success failure:failure];
 }
 
-- (void)downloadPath:(NSString *)remoteSource toURL:(NSURL *)localDestination success:(void(^)(void))success failure:(void(^)(AFHTTPRequestOperation *, NSError *))failure {
+- (void)downloadPath:(NSString *)remoteSource toURL:(NSURL *)localDestination success:(void(^)(void))success failure:(void(^)(AFHTTPRequestOperation *, NSError *))failure progress:(void(^)(NSUInteger bytes, long long totalBytes, long long totalBytesExpected))progress {
 	if ([self.fileManager respondsToSelector:@selector(createDirectoryAtURL:withIntermediateDirectories:attributes:error:) ]) {
 		[self.fileManager createDirectoryAtURL: [localDestination URLByDeletingLastPathComponent] withIntermediateDirectories: YES attributes: nil error: NULL];
 	} else {
@@ -242,6 +242,7 @@ NSString const *DZWebDAVResourceTypeKey     = @"g0:resourcetype";
 	NSMutableURLRequest *request = [self requestWithMethod:@"GET" path:remoteSource parameters:nil];
 	AFHTTPRequestOperation *operation = [self mr_operationWithRequest:request success:success failure:failure];
 	operation.outputStream = [NSOutputStream outputStreamWithURL: localDestination append: NO];
+    [operation setDownloadProgressBlock:progress];
     [self enqueueHTTPRequestOperation:operation];
     self.currentMoveCopyDeleteOperation = operation;
 }
@@ -282,13 +283,14 @@ NSString const *DZWebDAVResourceTypeKey     = @"g0:resourcetype";
     self.currentMoveCopyDeleteOperation = operation;
 }
 
-- (void)putLocalPath:(NSString *)localSource path:(NSString *)remoteDestination success:(void(^)(void))success failure:(void(^)(AFHTTPRequestOperation *, NSError *))failure {
+- (void)putLocalPath:(NSString *)localSource path:(NSString *)remoteDestination success:(void(^)(void))success failure:(void(^)(AFHTTPRequestOperation *, NSError *))failure progress:(void(^)(NSUInteger bytes, long long totalBytes, long long totalBytesExpected))progress {
     NSMutableURLRequest *request = [self requestWithMethod:@"PUT" path:remoteDestination parameters:nil];
 	[request setValue:@"application/octet-stream" forHTTPHeaderField:@"Content-Type"];
     NSUInteger fileSize = [[[[NSFileManager defaultManager] attributesOfItemAtPath:localSource error:nil] objectForKey:NSFileSize] unsignedIntegerValue];
     [request setValue:[NSString stringWithFormat:@"%u", fileSize] forHTTPHeaderField:@"Content-Length"];
 	AFHTTPRequestOperation *operation = [self mr_operationWithRequest:request success:success failure:failure];
 	operation.inputStream = [NSInputStream inputStreamWithFileAtPath:localSource];
+    [operation setUploadProgressBlock:progress];
     [self enqueueHTTPRequestOperation:operation];
     self.currentMoveCopyDeleteOperation = operation;
 }
