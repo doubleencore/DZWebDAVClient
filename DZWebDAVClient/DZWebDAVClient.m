@@ -129,7 +129,14 @@ NSString const *DZWebDAVResourceTypeKey     = @"g0:resourcetype";
 
         NSMutableDictionary *unformattedDict = [NSMutableDictionary dictionaryWithCapacity:[checkHrefs isKindOfClass:[NSArray class]]?[checkHrefs count]:1];
         id response = [responseObject valueForKeyPath:@"multistatus.response"];
-        NSArray *responseArray = [response isKindOfClass:[NSArray class]] ? response : @[response];
+        NSArray *responseArray = nil;
+        if ([response isKindOfClass:[NSArray class]]) {
+            responseArray = response;
+        }
+        else if (response) {
+            responseArray = @[response];
+        }
+        
         for (id responseItem in responseArray) {
             if ([responseItem isKindOfClass:[NSDictionary class]]) {
                 

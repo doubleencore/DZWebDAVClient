@@ -150,10 +150,12 @@ NSString *const kXMLReaderTextNodeKey = @"text";
         if (secondToLast.count > 1) {
             [secondToLast setObject:[NSNull null] forKey:elementName];
         } else {
-            NSMutableDictionary *thirdToLast = [self.dictionaryStack objectAtIndex:self.dictionaryStack.count-3];
-            NSString *key = [[thirdToLast allKeysForObject:secondToLast] lastObject];
-            if (key.length)
-                [thirdToLast setObject:elementName forKey:key];
+            if (self.dictionaryStack.count >= 3) {
+                NSMutableDictionary *thirdToLast = [self.dictionaryStack objectAtIndex:self.dictionaryStack.count-3];
+                NSString *key = [[thirdToLast allKeysForObject:secondToLast] lastObject];
+                if (key.length)
+                    [thirdToLast setObject:elementName forKey:key];
+            }
         }
     }
     
