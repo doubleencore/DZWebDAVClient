@@ -33,6 +33,7 @@ NSString const *DZWebDAVResourceTypeKey     = @"g0:resourcetype";
     if ((self = [super initWithBaseURL:url])) {
 		self.fileManager = [NSFileManager new];
         [self registerHTTPOperationClass: [DZDictionaryRequestOperation class]];
+        self.operationQueue.maxConcurrentOperationCount = 1;
     }
     return self;
 }
