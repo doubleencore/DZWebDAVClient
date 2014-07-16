@@ -226,7 +226,7 @@ NSString const *DZWebDAVResourceTypeKey     = @"g0:resourcetype";
 		if (success)
 			success(operation, dict);
 	} failure:failure];
-	[self enqueueHTTPRequestOperation:operation];
+	[self enqueueHTTPRequestOperationAndWait:operation];
 }
 
 - (void)propertiesOfPath:(NSString *)path success:(void(^)(AFHTTPRequestOperation *, id ))success failure:(void(^)(AFHTTPRequestOperation *, NSError *))failure {
